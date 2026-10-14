@@ -15,33 +15,63 @@ LeadPilot AI helps real-estate salespeople prioritize inbound leads and decide w
 - Recommended next action
 - AI-generated customer response
 - Lead-specific AI Sales Assistant
-- Dashboard with search, filtering and lead pipeline
+- Dashboard with search and filtering
 - Next Best Action for salespeople
 
-## 🛠️ Tech Stack
-
-- **Frontend:** React + Vite
-- **Backend:** FastAPI + Python
-- **Database:** SQLite + SQLAlchemy
-- **AI:** Google Gemini API
-
-## 🔄 How It Works
+## 🏗️ Architecture
 
 ```text
+                    ┌──────────────────┐
+                    │    Salesperson   │
+                    └────────┬─────────┘
+                             │
+                             ▼
+                    ┌──────────────────┐
+                    │  React + Vite    │
+                    │    Frontend      │
+                    └────────┬─────────┘
+                             │ REST API
+                             ▼
+                    ┌──────────────────┐
+                    │ FastAPI Backend  │
+                    └───────┬───┬──────┘
+                            │   │
+              ┌─────────────┘   └──────────────┐
+              ▼                                ▼
+     ┌─────────────────┐              ┌─────────────────┐
+     │ SQLite Database │              │   Gemini API    │
+     │  + SQLAlchemy   │              │  AI Analysis    │
+     └─────────────────┘              └─────────────────┘
+```
+
+🔄 Workflow
+```
 Add Lead
    ↓
 Gemini AI Analysis
    ↓
-Lead Score + Priority
+Score + Priority
    ↓
-Requirements + Intent + Objections
+Intent + Requirements + Objections
    ↓
 Next Best Action + Suggested Response
    ↓
 AI Sales Assistant
 ```
+
+🛠️ Tech Stack
+- Frontend: React + Vite
+- Backend: FastAPI + Python
+- Database: SQLite + SQLAlchemy
+- AI: Google Gemini API
+
+  
 ⚙️ Run Locally
-Backend
+1. Clone the Repository
+git clone https://github.com/Aayush-Rasaily/LeadPilot-AI-AI-powered-real-estate-lead-intelligence-sales-assistant.git
+cd LeadPilot-AI-AI-powered-real-estate-lead-intelligence-sales-assistant
+
+2. Backend
 cd backend
 python -m venv venv
 venv\Scripts\activate
@@ -53,13 +83,18 @@ GEMINI_API_KEY=your_api_key
 Run:
 uvicorn app.main:app --reload
 
-Backend: http://127.0.0.1:8000
-Frontend
+Backend:
+http://127.0.0.1:8000
+
+3. Frontend
+Open another terminal:
 cd frontend
 npm install
 npm run dev
 
-Frontend: http://localhost:5173
+Frontend:
+http://localhost:5173
+
 🤖 AI Usage
 Google Gemini is used for:
 - Lead scoring and prioritization
@@ -70,10 +105,13 @@ Google Gemini is used for:
 - Suggested responses
 - Lead-specific conversational assistance
 
+
 AI responses are generated dynamically from the provided lead information.
 🔗 Links
 GitHub:
 https://github.com/Aayush-Rasaily/LeadPilot-AI-AI-powered-real-estate-lead-intelligence-sales-assistant
+
 Live Demo: Coming soon
+
 👨‍💻 Author
 Aayush Rasaily
