@@ -179,3 +179,98 @@ The next action should be specific and actionable.
     )
 
     return LeadAnalysis.model_validate_json(response.text)
+
+def chat_with_lead(
+    name: str,
+    location: str,
+    property_requirement: str,
+    budget: str,
+    buying_timeline: str,
+    customer_message: str,
+    ai_summary: str | None,
+    customer_intent: str | None,
+    key_requirements: str | None,
+    objections: str | None,
+    recommended_action: str | None,
+    user_question: str,
+) -> str:
+
+    prompt = f"""
+You are LeadPilot AI, a sales assistant helping a real-estate salesperson.
+
+Your task is to answer the salesperson's question about ONE selected
+real-estate lead.
+
+STRICT GROUNDING RULES:
+1. Use ONLY the information explicitly provided below.
+2. Do NOT invent facts, events, conversations, actions, property options,
+   calls, meetings, messages, or customer preferences.
+3. Do NOT assume that the salesperson has already contacted the customer.
+4. Do NOT assume that property options have already been sent or shared.
+5. Do NOT say that something "was sent", "was discussed", "was shared",
+   or "already happened" unless it is explicitly present in the lead data.
+6. If information is unavailable, clearly say that it is not available
+   from the lead information.
+7. You may recommend what the salesperson SHOULD do next, but clearly
+   phrase it as a recommendation.
+8. Keep the answer practical and useful for a salesperson.
+9. Do not use Markdown formatting. Use plain text with numbered points
+   or bullet points when useful.
+
+SELECTED LEAD
+
+Name:
+{name}
+
+Location:
+{location}
+
+Property Requirement:
+{property_requirement}
+
+Budget:
+{budget}
+
+Buying Timeline:
+{buying_timeline}
+
+Original Customer Message:
+{customer_message}
+
+
+AI ANALYSIS
+
+Summary:
+{ai_summary or "Not analyzed yet"}
+
+Customer Intent:
+{customer_intent or "Not available"}
+
+Key Requirements:
+{key_requirements or "Not available"}
+
+Objections:
+{objections or "None identified"}
+
+Recommended Action:
+{recommended_action or "Not available"}
+
+
+SALESPERSON QUESTION:
+{user_question}
+
+
+Answer the salesperson clearly and concisely.
+
+Remember:
+Only describe facts that are actually present in the lead information.
+If recommending an action, clearly describe it as something the salesperson
+should do next.
+"""
+
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt,
+    )
+
+    return response.text.strip()

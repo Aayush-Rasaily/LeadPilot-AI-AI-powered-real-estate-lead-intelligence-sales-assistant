@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { analyzeLead, getLead } from "../services/api";
+
+import {
+  analyzeLead,
+  getLead,
+  chatWithLead,
+} from "../services/api";
 
 export default function LeadDetails() {
   const { id } = useParams();
@@ -11,13 +16,23 @@ export default function LeadDetails() {
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState("");
 
+  // Chat state
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+
+  // Copy state
+  const [copied, setCopied] = useState(false);
+
   async function loadLead() {
     try {
       setLoading(true);
+      setError("");
+
       const data = await getLead(id);
       setLead(data);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Failed to load lead.");
     } finally {
       setLoading(false);
     }
@@ -29,37 +44,136 @@ export default function LeadDetails() {
       setError("");
 
       const updatedLead = await analyzeLead(id);
-
       setLead(updatedLead);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Failed to analyze lead.");
     } finally {
       setAnalyzing(false);
     }
+  }
+
+  async function handleChat() {
+    const message = chatInput.trim();
+
+    if (!message || chatLoading) {
+      return;
+    }
+
+    try {
+      setChatLoading(true);
+      setError("");
+
+      // Show user's message immediately
+      setChatMessages((messages) => [
+        ...messages,
+        {
+          role: "user",
+          content: message,
+        },
+      ]);
+
+      setChatInput("");
+
+      // Send question to backend / Gemini
+      const response = await chatWithLead(id, message);
+
+      // Add AI response
+      setChatMessages((messages) => [
+        ...messages,
+        {
+          role: "assistant",
+          content: response.answer,
+        },
+      ]);
+    } catch (err) {
+      setError(err.message || "Failed to get AI response.");
+    } finally {
+      setChatLoading(false);
+    }
+  }
+
+  function handleSuggestion(question) {
+    setChatInput(question);
+  }
+
+  async function handleCopyResponse() {
+    if (!lead?.suggested_response) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(lead.suggested_response);
+      setCopied(true);
+
+      setTimeout(() => {
+        setCopied(false);
+      }, 1800);
+    } catch {
+      setError("Could not copy the response.");
+    }
+  }
+
+  function getPriorityClass(priority) {
+    return priority
+      ? priority.toLowerCase()
+      : "pending";
+  }
+
+  function formatScore(score) {
+    if (score === null || score === undefined) {
+      return "--";
+    }
+
+    return Math.round(score);
   }
 
   useEffect(() => {
     loadLead();
   }, [id]);
 
+  // Loading
   if (loading) {
     return (
       <div className="page-container">
-        <p>Loading lead...</p>
+        <div className="loading-state">
+          <div className="loading-spinner"></div>
+          <p>Loading lead intelligence...</p>
+        </div>
       </div>
     );
   }
 
+  // Lead not found
   if (!lead) {
     return (
       <div className="page-container">
-        <p>Lead not found.</p>
+        <div className="empty-state">
+          <h2>Lead not found</h2>
+          <p>
+            The lead you're looking for could not be found.
+          </p>
+
+          <button
+            className="primary-button"
+            onClick={() => navigate("/")}
+          >
+            Back to Dashboard
+          </button>
+        </div>
       </div>
     );
   }
 
+  const isAnalyzed =
+    lead.lead_score !== null &&
+    lead.lead_score !== undefined;
+
   return (
     <div className="page-container">
+
+      {/* =====================================================
+          BACK BUTTON
+      ===================================================== */}
 
       <button
         className="back-button"
@@ -68,9 +182,17 @@ export default function LeadDetails() {
         ← Back to Dashboard
       </button>
 
+
+      {/* =====================================================
+          LEAD HEADER
+      ===================================================== */}
+
       <div className="lead-header">
+
         <div>
-          <p className="eyebrow">LEAD INTELLIGENCE</p>
+          <p className="eyebrow">
+            LEAD INTELLIGENCE
+          </p>
 
           <h1>{lead.name}</h1>
 
@@ -79,80 +201,27 @@ export default function LeadDetails() {
           </p>
         </div>
 
-        <button
-          className="primary-button"
-          onClick={handleAnalyze}
-          disabled={analyzing}
-        >
-          {analyzing ? "Analyzing..." : "✨ Analyze Lead"}
-        </button>
-      </div>
+        <div className="lead-header-actions">
 
-      {error && (
-        <div className="error-message">
-          {error}
-        </div>
-      )}
+          {isAnalyzed && (
+            <div className="lead-header-score">
+              <span className="score-mini">
+                {formatScore(lead.lead_score)}
+              </span>
 
-      <div className="lead-info-grid">
+              <span className="score-mini-label">
+                / 100
+              </span>
 
-        <div className="info-card">
-          <span>Property</span>
-          <strong>{lead.property_requirement}</strong>
-        </div>
-
-        <div className="info-card">
-          <span>Budget</span>
-          <strong>{lead.budget}</strong>
-        </div>
-
-        <div className="info-card">
-          <span>Timeline</span>
-          <strong>{lead.buying_timeline}</strong>
-        </div>
-
-        <div className="info-card">
-          <span>Priority</span>
-
-          <strong
-            className={`priority-badge ${
-              lead.priority
-                ? lead.priority.toLowerCase()
-                : "pending"
-            }`}
-          >
-            {lead.priority || "PENDING"}
-          </strong>
-        </div>
-
-      </div>
-
-
-      <div className="customer-message-card">
-
-        <h2>Customer Message</h2>
-
-        <p>
-          {lead.customer_message}
-        </p>
-
-      </div>
-
-
-      {!lead.lead_score ? (
-
-        <div className="analysis-empty">
-
-          <div className="analysis-icon">
-            ✨
-          </div>
-
-          <h2>AI analysis is ready to run</h2>
-
-          <p>
-            Analyze this lead to understand customer intent,
-            requirements, concerns and the recommended next action.
-          </p>
+              <span
+                className={`priority-badge ${getPriorityClass(
+                  lead.priority
+                )}`}
+              >
+                {lead.priority}
+              </span>
+            </div>
+          )}
 
           <button
             className="primary-button"
@@ -161,6 +230,125 @@ export default function LeadDetails() {
           >
             {analyzing
               ? "Analyzing..."
+              : isAnalyzed
+              ? "↻ Re-analyze"
+              : "✨ Analyze Lead"}
+          </button>
+
+        </div>
+
+      </div>
+
+
+      {/* =====================================================
+          ERROR
+      ===================================================== */}
+
+      {error && (
+        <div className="error-message">
+          {error}
+        </div>
+      )}
+
+
+      {/* =====================================================
+          LEAD INFORMATION
+      ===================================================== */}
+
+      <div className="lead-info-grid">
+
+        <div className="info-card">
+          <span>Property</span>
+          <strong>
+            {lead.property_requirement}
+          </strong>
+        </div>
+
+        <div className="info-card">
+          <span>Budget</span>
+          <strong>
+            {lead.budget}
+          </strong>
+        </div>
+
+        <div className="info-card">
+          <span>Timeline</span>
+          <strong>
+            {lead.buying_timeline}
+          </strong>
+        </div>
+
+        <div className="info-card">
+          <span>Priority</span>
+
+          <strong
+            className={`priority-badge ${getPriorityClass(
+              lead.priority
+            )}`}
+          >
+            {lead.priority || "PENDING"}
+          </strong>
+        </div>
+
+      </div>
+
+
+      {/* =====================================================
+          CUSTOMER MESSAGE
+      ===================================================== */}
+
+      <div className="customer-message-card">
+
+        <div className="card-heading-row">
+          <div>
+            <p className="eyebrow">
+              CUSTOMER MESSAGE
+            </p>
+
+            <h2>What the customer said</h2>
+          </div>
+        </div>
+
+        <p className="customer-message-text">
+          {lead.customer_message}
+        </p>
+
+      </div>
+
+
+      {/* =====================================================
+          AI ANALYSIS
+      ===================================================== */}
+
+      {!isAnalyzed ? (
+
+        <div className="analysis-empty">
+
+          <div className="analysis-icon">
+            ✨
+          </div>
+
+          <p className="eyebrow">
+            AI LEAD INTELLIGENCE
+          </p>
+
+          <h2>
+            Turn this lead into an action plan
+          </h2>
+
+          <p>
+            Analyze the customer message to understand
+            buying intent, requirements, concerns,
+            urgency and the recommended next action.
+          </p>
+
+          <button
+            className="primary-button"
+            onClick={handleAnalyze}
+            disabled={analyzing}
+          >
+            {analyzing
+              ? "Analyzing with Gemini..."
               : "Analyze with AI"}
           </button>
 
@@ -169,6 +357,10 @@ export default function LeadDetails() {
       ) : (
 
         <>
+
+          {/* =================================================
+              ANALYSIS HEADER
+          ================================================= */}
 
           <div className="analysis-header">
 
@@ -180,12 +372,20 @@ export default function LeadDetails() {
               <h2>
                 What should the salesperson do?
               </h2>
+
+              <p>
+                LeadPilot analyzed the customer information
+                and identified the strongest sales signal.
+              </p>
             </div>
+
+
+            {/* SCORE */}
 
             <div className="score-card">
 
               <div className="score-number">
-                {Math.round(lead.lead_score)}
+                {formatScore(lead.lead_score)}
               </div>
 
               <div className="score-label">
@@ -193,9 +393,9 @@ export default function LeadDetails() {
               </div>
 
               <span
-                className={`priority-badge ${
-                  lead.priority.toLowerCase()
-                }`}
+                className={`priority-badge ${getPriorityClass(
+                  lead.priority
+                )}`}
               >
                 {lead.priority}
               </span>
@@ -205,69 +405,108 @@ export default function LeadDetails() {
           </div>
 
 
+          {/* =================================================
+              ANALYSIS CARDS
+          ================================================= */}
+
           <div className="analysis-grid">
+
+
+            {/* SUMMARY */}
 
             <div className="analysis-card summary-card">
 
-              <h3>Customer Summary</h3>
+              <h3>
+                Customer Summary
+              </h3>
 
               <p>
-                {lead.ai_summary}
+                {lead.ai_summary ||
+                  "No summary available."}
               </p>
 
             </div>
 
 
+            {/* INTENT */}
+
             <div className="analysis-card">
 
-              <h3>Customer Intent</h3>
+              <h3>
+                Customer Intent
+              </h3>
 
               <p>
-                {lead.customer_intent}
+                {lead.customer_intent ||
+                  "Not available"}
               </p>
 
             </div>
 
 
+            {/* URGENCY */}
+
             <div className="analysis-card">
 
-              <h3>Urgency</h3>
+              <h3>
+                Urgency
+              </h3>
 
               <span
                 className={`urgency ${
-                  lead.urgency?.toLowerCase()
+                  lead.urgency
+                    ? lead.urgency.toLowerCase()
+                    : ""
                 }`}
               >
-                {lead.urgency}
+                {lead.urgency || "Not available"}
               </span>
 
             </div>
 
 
+            {/* REQUIREMENTS */}
+
             <div className="analysis-card">
 
-              <h3>Key Requirements</h3>
+              <h3>
+                Key Requirements
+              </h3>
 
               <div className="bullet-list">
-                {lead.key_requirements
-                  ?.split("\n")
-                  .filter(Boolean)
-                  .map((item, index) => (
-                    <div key={index}>
-                      {item}
-                    </div>
-                  ))}
+
+                {lead.key_requirements ? (
+                  lead.key_requirements
+                    .split("\n")
+                    .filter(Boolean)
+                    .map((item, index) => (
+                      <div key={index}>
+                        {item}
+                      </div>
+                    ))
+                ) : (
+                  <p className="muted">
+                    No requirements identified.
+                  </p>
+                )}
+
               </div>
 
             </div>
 
 
+            {/* OBJECTIONS */}
+
             <div className="analysis-card">
 
-              <h3>Objections / Concerns</h3>
+              <h3>
+                Objections / Concerns
+              </h3>
 
               {lead.objections ? (
+
                 <div className="bullet-list">
+
                   {lead.objections
                     .split("\n")
                     .filter(Boolean)
@@ -276,15 +515,21 @@ export default function LeadDetails() {
                         {item}
                       </div>
                     ))}
+
                 </div>
+
               ) : (
+
                 <p className="muted">
                   No major objections identified.
                 </p>
+
               )}
 
             </div>
 
+
+            {/* NEXT ACTION */}
 
             <div className="analysis-card next-action-card">
 
@@ -297,31 +542,220 @@ export default function LeadDetails() {
               </h3>
 
               <p>
-                {lead.recommended_action}
+                {lead.recommended_action ||
+                  "No recommended action available."}
               </p>
 
             </div>
 
 
+            {/* SUGGESTED RESPONSE */}
+
             <div className="analysis-card response-card">
 
-              <h3>
-                Suggested Customer Response
-              </h3>
+              <div className="response-header">
+
+                <div>
+                  <p className="eyebrow">
+                    AI-GENERATED
+                  </p>
+
+                  <h3>
+                    Suggested Customer Response
+                  </h3>
+                </div>
+
+              </div>
 
               <div className="response-box">
-                {lead.suggested_response}
+                {lead.suggested_response ||
+                  "No suggested response available."}
               </div>
 
               <button
                 className="secondary-button"
+                onClick={handleCopyResponse}
+                disabled={!lead.suggested_response}
+              >
+                {copied
+                  ? "✓ Copied"
+                  : "Copy Response"}
+              </button>
+
+            </div>
+
+          </div>
+
+
+          {/* =================================================
+              AI SALES ASSISTANT
+          ================================================= */}
+
+          <div className="lead-chat-card">
+
+            <div className="chat-header">
+
+              <div>
+
+                <p className="eyebrow">
+                  LEADPILOT AI
+                </p>
+
+                <h2>
+                  Ask about this lead
+                </h2>
+
+                <p>
+                  Get practical sales guidance grounded
+                  in this customer's information.
+                </p>
+
+              </div>
+
+              <div className="chat-ai-status">
+                <span className="status-dot"></span>
+                AI Ready
+              </div>
+
+            </div>
+
+
+            {/* CHAT MESSAGES */}
+
+            {chatMessages.length > 0 && (
+
+              <div className="chat-messages">
+
+                {chatMessages.map(
+                  (message, index) => (
+
+                    <div
+                      key={index}
+                      className={`chat-message ${
+                        message.role
+                      }`}
+                    >
+
+                      <div className="chat-message-label">
+                        {message.role === "user"
+                          ? "You"
+                          : "LeadPilot AI"}
+                      </div>
+
+                      <div className="chat-message-content">
+                        {message.content}
+                      </div>
+
+                    </div>
+
+                  )
+                )}
+
+
+                {/* AI THINKING */}
+
+                {chatLoading && (
+
+                  <div className="chat-message assistant">
+
+                    <div className="chat-message-label">
+                      LeadPilot AI
+                    </div>
+
+                    <div className="chat-message-content">
+                      Thinking...
+                    </div>
+
+                  </div>
+
+                )}
+
+              </div>
+
+            )}
+
+
+            {/* SUGGESTIONS */}
+
+            <div className="chat-suggestions">
+
+              <button
                 onClick={() =>
-                  navigator.clipboard.writeText(
-                    lead.suggested_response
+                  handleSuggestion(
+                    "Why is this lead considered high priority?"
                   )
                 }
               >
-                Copy Response
+                Why is this lead HOT?
+              </button>
+
+              <button
+                onClick={() =>
+                  handleSuggestion(
+                    "What should I ask the customer on the call?"
+                  )
+                }
+              >
+                What should I ask?
+              </button>
+
+              <button
+                onClick={() =>
+                  handleSuggestion(
+                    "What objections should I prepare for?"
+                  )
+                }
+              >
+                Possible objections
+              </button>
+
+              <button
+                onClick={() =>
+                  handleSuggestion(
+                    "What should I do next to move this lead forward?"
+                  )
+                }
+              >
+                What should I do next?
+              </button>
+
+            </div>
+
+
+            {/* CHAT INPUT */}
+
+            <div className="chat-input-row">
+
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) =>
+                  setChatInput(e.target.value)
+                }
+                onKeyDown={(e) => {
+                  if (
+                    e.key === "Enter" &&
+                    !e.shiftKey
+                  ) {
+                    e.preventDefault();
+                    handleChat();
+                  }
+                }}
+                placeholder="Ask something about this lead..."
+                disabled={chatLoading}
+              />
+
+              <button
+                className="primary-button"
+                onClick={handleChat}
+                disabled={
+                  chatLoading ||
+                  !chatInput.trim()
+                }
+              >
+                {chatLoading
+                  ? "Thinking..."
+                  : "Send"}
               </button>
 
             </div>

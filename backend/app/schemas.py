@@ -30,3 +30,10 @@ class LeadResponse(LeadCreate):
 
     created_at: datetime
     updated_at: datetime
+
+class LeadChatRequest(BaseModel):
+    message: str
+
+
+class LeadChatResponse(BaseModel):
+    answer: str

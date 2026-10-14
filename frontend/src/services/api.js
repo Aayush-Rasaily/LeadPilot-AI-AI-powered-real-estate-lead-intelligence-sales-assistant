@@ -54,3 +54,25 @@ export async function analyzeLead(id) {
 
     return response.json();
 }
+
+export async function chatWithLead(id, message) {
+    const response = await fetch(
+        `${API_BASE_URL}/api/leads/${id}/chat`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
+            body: JSON.stringify({
+                message,
+            }),
+        }
+    );
+
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.detail || "Failed to chat with lead");
+    }
+
+    return response.json();
+}
