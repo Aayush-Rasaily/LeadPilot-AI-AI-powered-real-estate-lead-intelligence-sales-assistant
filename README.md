@@ -117,11 +117,14 @@ Google Gemini is used for:
 
 
 AI responses are generated dynamically from the provided lead information.
+
 🔗 Links
 GitHub:
 https://github.com/Aayush-Rasaily/LeadPilot-AI-AI-powered-real-estate-lead-intelligence-sales-assistant
 
+
 Live Demo: Coming soon
+
 
 👨‍💻 Author
 Aayush Rasaily
