@@ -69,30 +69,38 @@ AI Sales Assistant
 ⚙️ Run Locally
 1. Clone the Repository
 git clone https://github.com/Aayush-Rasaily/LeadPilot-AI-AI-powered-real-estate-lead-intelligence-sales-assistant.git
+
 cd LeadPilot-AI-AI-powered-real-estate-lead-intelligence-sales-assistant
 
-2. Backend
+3. Backend
+
 cd backend
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
 
 Create backend/.env:
+
 GEMINI_API_KEY=your_api_key
 
 Run:
+
 uvicorn app.main:app --reload
 
 Backend:
+
 http://127.0.0.1:8000
 
 3. Frontend
+
 Open another terminal:
+
 cd frontend
 npm install
 npm run dev
 
 Frontend:
+
 http://localhost:5173
 
 🤖 AI Usage
