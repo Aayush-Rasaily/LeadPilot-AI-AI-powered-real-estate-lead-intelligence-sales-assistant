@@ -304,13 +304,14 @@ https://leadpilotai-backend.onrender.com
 
 The frontend communicates with the FastAPI backend through REST APIs.
 📌 Key API Endpoints
+```
 Method	Endpoint	Purpose
 GET	/api/leads/	Get all leads
 POST	/api/leads/	Create a lead
 GET	/api/leads/{id}	Get a specific lead
 POST	/api/leads/{id}/analyze	Analyze a lead using AI
 POST	/api/leads/{id}/chat	Ask the AI assistant about a lead
-
+```
 
 🎯 Problem Solved
 Real-estate salespeople often receive many inbound leads but do not have enough time to manually evaluate each one.
