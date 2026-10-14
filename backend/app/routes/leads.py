@@ -28,13 +28,14 @@ def create_lead(
     db: Session = Depends(get_db)
 ):
     lead = Lead(
-        name=lead_data.name,
-        location=lead_data.location,
-        property_requirement=lead_data.property_requirement,
-        budget=lead_data.budget,
-        buying_timeline=lead_data.buying_timeline,
-        customer_message=lead_data.customer_message
-    )
+    name=lead_data.name,
+    phone=lead_data.phone,
+    location=lead_data.location,
+    property_requirement=lead_data.property_requirement,
+    budget=lead_data.budget,
+    buying_timeline=lead_data.buying_timeline,
+    customer_message=lead_data.customer_message,
+)
 
     db.add(lead)
     db.commit()

@@ -63,7 +63,6 @@ export default function LeadDetails() {
       setChatLoading(true);
       setError("");
 
-      // Show user's message immediately
       setChatMessages((messages) => [
         ...messages,
         {
@@ -74,10 +73,8 @@ export default function LeadDetails() {
 
       setChatInput("");
 
-      // Send question to backend / Gemini
       const response = await chatWithLead(id, message);
 
-      // Add AI response
       setChatMessages((messages) => [
         ...messages,
         {
@@ -102,7 +99,10 @@ export default function LeadDetails() {
     }
 
     try {
-      await navigator.clipboard.writeText(lead.suggested_response);
+      await navigator.clipboard.writeText(
+        lead.suggested_response
+      );
+
       setCopied(true);
 
       setTimeout(() => {
@@ -149,6 +149,7 @@ export default function LeadDetails() {
       <div className="page-container">
         <div className="empty-state">
           <h2>Lead not found</h2>
+
           <p>
             The lead you're looking for could not be found.
           </p>
@@ -171,10 +172,7 @@ export default function LeadDetails() {
   return (
     <div className="page-container">
 
-      {/* =====================================================
-          BACK BUTTON
-      ===================================================== */}
-
+      {/* Back */}
       <button
         className="back-button"
         onClick={() => navigate("/")}
@@ -182,11 +180,7 @@ export default function LeadDetails() {
         ← Back to Dashboard
       </button>
 
-
-      {/* =====================================================
-          LEAD HEADER
-      ===================================================== */}
-
+      {/* Lead Header */}
       <div className="lead-header">
 
         <div>
@@ -203,8 +197,19 @@ export default function LeadDetails() {
 
         <div className="lead-header-actions">
 
+          {/* Call Customer */}
+          {lead.phone && (
+            <a
+              href={`tel:${lead.phone}`}
+              className="call-button"
+            >
+              📞 Call Customer
+            </a>
+          )}
+
           {isAnalyzed && (
             <div className="lead-header-score">
+
               <span className="score-mini">
                 {formatScore(lead.lead_score)}
               </span>
@@ -220,6 +225,7 @@ export default function LeadDetails() {
               >
                 {lead.priority}
               </span>
+
             </div>
           )}
 
@@ -236,25 +242,16 @@ export default function LeadDetails() {
           </button>
 
         </div>
-
       </div>
 
-
-      {/* =====================================================
-          ERROR
-      ===================================================== */}
-
+      {/* Error */}
       {error && (
         <div className="error-message">
           {error}
         </div>
       )}
 
-
-      {/* =====================================================
-          LEAD INFORMATION
-      ===================================================== */}
-
+      {/* Lead Information */}
       <div className="lead-info-grid">
 
         <div className="info-card">
@@ -279,6 +276,13 @@ export default function LeadDetails() {
         </div>
 
         <div className="info-card">
+          <span>Phone</span>
+          <strong>
+            {lead.phone || "Not provided"}
+          </strong>
+        </div>
+
+        <div className="info-card">
           <span>Priority</span>
 
           <strong
@@ -292,14 +296,11 @@ export default function LeadDetails() {
 
       </div>
 
-
-      {/* =====================================================
-          CUSTOMER MESSAGE
-      ===================================================== */}
-
+      {/* Customer Message */}
       <div className="customer-message-card">
 
         <div className="card-heading-row">
+
           <div>
             <p className="eyebrow">
               CUSTOMER MESSAGE
@@ -307,6 +308,7 @@ export default function LeadDetails() {
 
             <h2>What the customer said</h2>
           </div>
+
         </div>
 
         <p className="customer-message-text">
@@ -315,11 +317,7 @@ export default function LeadDetails() {
 
       </div>
 
-
-      {/* =====================================================
-          AI ANALYSIS
-      ===================================================== */}
-
+      {/* AI Analysis */}
       {!isAnalyzed ? (
 
         <div className="analysis-empty">
@@ -358,10 +356,7 @@ export default function LeadDetails() {
 
         <>
 
-          {/* =================================================
-              ANALYSIS HEADER
-          ================================================= */}
-
+          {/* Analysis Header */}
           <div className="analysis-header">
 
             <div>
@@ -379,9 +374,7 @@ export default function LeadDetails() {
               </p>
             </div>
 
-
-            {/* SCORE */}
-
+            {/* Score */}
             <div className="score-card">
 
               <div className="score-number">
@@ -404,16 +397,10 @@ export default function LeadDetails() {
 
           </div>
 
-
-          {/* =================================================
-              ANALYSIS CARDS
-          ================================================= */}
-
+          {/* Analysis Cards */}
           <div className="analysis-grid">
 
-
-            {/* SUMMARY */}
-
+            {/* Summary */}
             <div className="analysis-card summary-card">
 
               <h3>
@@ -427,9 +414,7 @@ export default function LeadDetails() {
 
             </div>
 
-
-            {/* INTENT */}
-
+            {/* Intent */}
             <div className="analysis-card">
 
               <h3>
@@ -443,9 +428,7 @@ export default function LeadDetails() {
 
             </div>
 
-
-            {/* URGENCY */}
-
+            {/* Urgency */}
             <div className="analysis-card">
 
               <h3>
@@ -464,9 +447,7 @@ export default function LeadDetails() {
 
             </div>
 
-
-            {/* REQUIREMENTS */}
-
+            {/* Requirements */}
             <div className="analysis-card">
 
               <h3>
@@ -494,9 +475,7 @@ export default function LeadDetails() {
 
             </div>
 
-
-            {/* OBJECTIONS */}
-
+            {/* Objections */}
             <div className="analysis-card">
 
               <h3>
@@ -528,9 +507,7 @@ export default function LeadDetails() {
 
             </div>
 
-
-            {/* NEXT ACTION */}
-
+            {/* Next Action */}
             <div className="analysis-card next-action-card">
 
               <div className="action-label">
@@ -546,11 +523,19 @@ export default function LeadDetails() {
                   "No recommended action available."}
               </p>
 
+              {/* Direct Call Action */}
+              {lead.phone && (
+                <a
+                  href={`tel:${lead.phone}`}
+                  className="call-button action-call-button"
+                >
+                  📞 Call Customer
+                </a>
+              )}
+
             </div>
 
-
-            {/* SUGGESTED RESPONSE */}
-
+            {/* Suggested Response */}
             <div className="analysis-card response-card">
 
               <div className="response-header">
@@ -586,11 +571,7 @@ export default function LeadDetails() {
 
           </div>
 
-
-          {/* =================================================
-              AI SALES ASSISTANT
-          ================================================= */}
-
+          {/* AI Sales Assistant */}
           <div className="lead-chat-card">
 
             <div className="chat-header">
@@ -619,9 +600,7 @@ export default function LeadDetails() {
 
             </div>
 
-
-            {/* CHAT MESSAGES */}
-
+            {/* Chat Messages */}
             {chatMessages.length > 0 && (
 
               <div className="chat-messages">
@@ -631,9 +610,7 @@ export default function LeadDetails() {
 
                     <div
                       key={index}
-                      className={`chat-message ${
-                        message.role
-                      }`}
+                      className={`chat-message ${message.role}`}
                     >
 
                       <div className="chat-message-label">
@@ -651,11 +628,8 @@ export default function LeadDetails() {
                   )
                 )}
 
-
-                {/* AI THINKING */}
-
+                {/* AI Thinking */}
                 {chatLoading && (
-
                   <div className="chat-message assistant">
 
                     <div className="chat-message-label">
@@ -667,16 +641,13 @@ export default function LeadDetails() {
                     </div>
 
                   </div>
-
                 )}
 
               </div>
 
             )}
 
-
-            {/* SUGGESTIONS */}
-
+            {/* Suggestions */}
             <div className="chat-suggestions">
 
               <button
@@ -721,9 +692,7 @@ export default function LeadDetails() {
 
             </div>
 
-
-            {/* CHAT INPUT */}
-
+            {/* Chat Input */}
             <div className="chat-input-row">
 
               <input

@@ -5,6 +5,7 @@ from datetime import datetime
 
 class LeadCreate(BaseModel):
     name: str
+    phone: str
     location: str
     property_requirement: str
     budget: str

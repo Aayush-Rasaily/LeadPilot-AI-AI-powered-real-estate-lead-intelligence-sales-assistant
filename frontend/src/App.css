@@ -1226,3 +1226,34 @@ button {
         width: 100%;
     }
 }
+
+
+/* =========================================
+   CALL CUSTOMER
+========================================= */
+
+.call-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 18px;
+    border-radius: 10px;
+    background: #111827;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.call-button:hover {
+    background: #1f2937;
+    transform: translateY(-1px);
+}
+
+.action-call-button {
+    margin-top: 16px;
+}

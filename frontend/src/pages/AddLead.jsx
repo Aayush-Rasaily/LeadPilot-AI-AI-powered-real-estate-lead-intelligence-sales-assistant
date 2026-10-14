@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import { createLead } from "../services/api";
 
 const initialForm = {
   name: "",
+  phone: "",
   location: "",
   property_requirement: "",
   budget: "",
@@ -27,7 +29,6 @@ export default function AddLead() {
       [name]: value,
     }));
 
-    // Remove field error as user fixes it
     setErrors((current) => ({
       ...current,
       [name]: "",
@@ -41,6 +42,12 @@ export default function AddLead() {
 
     if (!form.name.trim()) {
       newErrors.name = "Customer name is required.";
+    }
+
+    if (!form.phone.trim()) {
+      newErrors.phone = "Phone number is required.";
+    } else if (form.phone.replace(/\D/g, "").length < 10) {
+      newErrors.phone = "Please enter a valid phone number.";
     }
 
     if (!form.location.trim()) {
@@ -87,6 +94,7 @@ export default function AddLead() {
 
       const createdLead = await createLead({
         name: form.name.trim(),
+        phone: form.phone.trim(),
         location: form.location.trim(),
         property_requirement:
           form.property_requirement.trim(),
@@ -97,7 +105,6 @@ export default function AddLead() {
           form.customer_message.trim(),
       });
 
-      // Go directly to the newly created lead
       navigate(`/leads/${createdLead.id}`);
     } catch (err) {
       setError(
@@ -121,27 +128,19 @@ export default function AddLead() {
         ← Back to Dashboard
       </button>
 
-
       {/* Header */}
       <div className="add-lead-header">
-
         <div>
-          <p className="eyebrow">
-            NEW LEAD
-          </p>
+          <p className="eyebrow">NEW LEAD</p>
 
-          <h1>
-            Add a customer lead
-          </h1>
+          <h1>Add a customer lead</h1>
 
           <p className="add-lead-subtitle">
             Capture the customer's inquiry. LeadPilot will
             analyze it and recommend what to do next.
           </p>
         </div>
-
       </div>
-
 
       {/* Error */}
       {error && (
@@ -149,7 +148,6 @@ export default function AddLead() {
           {error}
         </div>
       )}
-
 
       {/* Form */}
       <form
@@ -163,9 +161,7 @@ export default function AddLead() {
               CUSTOMER INFORMATION
             </p>
 
-            <h2>
-              Lead details
-            </h2>
+            <h2>Lead details</h2>
 
             <p>
               Enter the information available from the
@@ -174,16 +170,13 @@ export default function AddLead() {
           </div>
         </div>
 
-
         {/* Basic information */}
         <div className="form-grid">
 
           {/* Name */}
           <div className="form-field">
-
             <label htmlFor="name">
-              Customer Name
-              <span>*</span>
+              Customer Name <span>*</span>
             </label>
 
             <input
@@ -194,7 +187,9 @@ export default function AddLead() {
               onChange={handleChange}
               placeholder="e.g. Rahul Sharma"
               autoComplete="name"
-              className={errors.name ? "input-error" : ""}
+              className={
+                errors.name ? "input-error" : ""
+              }
             />
 
             {errors.name && (
@@ -202,16 +197,38 @@ export default function AddLead() {
                 {errors.name}
               </small>
             )}
-
           </div>
 
+          {/* Phone */}
+          <div className="form-field">
+            <label htmlFor="phone">
+              Phone Number <span>*</span>
+            </label>
+
+            <input
+              id="phone"
+              name="phone"
+              type="tel"
+              value={form.phone}
+              onChange={handleChange}
+              placeholder="e.g. +91 98765 43210"
+              autoComplete="tel"
+              className={
+                errors.phone ? "input-error" : ""
+              }
+            />
+
+            {errors.phone && (
+              <small className="field-error">
+                {errors.phone}
+              </small>
+            )}
+          </div>
 
           {/* Location */}
           <div className="form-field">
-
             <label htmlFor="location">
-              Location
-              <span>*</span>
+              Location <span>*</span>
             </label>
 
             <input
@@ -231,16 +248,12 @@ export default function AddLead() {
                 {errors.location}
               </small>
             )}
-
           </div>
-
 
           {/* Property */}
           <div className="form-field">
-
             <label htmlFor="property_requirement">
-              Property Requirement
-              <span>*</span>
+              Property Requirement <span>*</span>
             </label>
 
             <input
@@ -262,16 +275,12 @@ export default function AddLead() {
                 {errors.property_requirement}
               </small>
             )}
-
           </div>
-
 
           {/* Budget */}
           <div className="form-field">
-
             <label htmlFor="budget">
-              Budget
-              <span>*</span>
+              Budget <span>*</span>
             </label>
 
             <input
@@ -291,16 +300,12 @@ export default function AddLead() {
                 {errors.budget}
               </small>
             )}
-
           </div>
-
 
           {/* Timeline */}
           <div className="form-field">
-
             <label htmlFor="buying_timeline">
-              Buying Timeline
-              <span>*</span>
+              Buying Timeline <span>*</span>
             </label>
 
             <select
@@ -348,26 +353,20 @@ export default function AddLead() {
                 {errors.buying_timeline}
               </small>
             )}
-
           </div>
-
         </div>
-
 
         {/* Customer message */}
         <div className="form-field form-field-full">
 
           <div className="message-label-row">
-
             <label htmlFor="customer_message">
-              Customer Message
-              <span>*</span>
+              Customer Message <span>*</span>
             </label>
 
             <small>
               {form.customer_message.length} characters
             </small>
-
           </div>
 
           <textarea
@@ -395,9 +394,7 @@ export default function AddLead() {
               {errors.customer_message}
             </small>
           )}
-
         </div>
-
 
         {/* AI note */}
         <div className="ai-form-note">
@@ -419,7 +416,6 @@ export default function AddLead() {
           </div>
 
         </div>
-
 
         {/* Actions */}
         <div className="form-actions">
@@ -446,7 +442,6 @@ export default function AddLead() {
         </div>
 
       </form>
-
     </div>
   );
 }
