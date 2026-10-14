@@ -303,6 +303,7 @@ Backend:
 https://leadpilotai-backend.onrender.com
 
 The frontend communicates with the FastAPI backend through REST APIs.
+
 📌 Key API Endpoints
 ```
 Method	Endpoint	Purpose
