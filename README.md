@@ -295,10 +295,13 @@ When information is unavailable, the assistant is instructed to say so rather th
 
 🌐 Deployment
 The application is deployed using Render.
+
 Frontend:
 https://leadpilotai-ai-powered-real-estate-lead.onrender.com
+
 Backend:
 https://leadpilotai-backend.onrender.com
+
 The frontend communicates with the FastAPI backend through REST APIs.
 📌 Key API Endpoints
 Method	Endpoint	Purpose
